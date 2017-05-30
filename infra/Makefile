@@ -26,7 +26,11 @@ update-config: get-cluster-credentials
 update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=./cluster/configmaps/plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
-.PHONY: update-config update-plugins get-cluster-credentials
+update-configs:
+	make update-config
+	make update-plugins
+
+.PHONY: update-config update-plugins get-cluster-credentials update-configs
 
 hook-deployment: get-cluster-credentials
 	kubectl apply -f cluster/deployments/hook_deployment.yaml

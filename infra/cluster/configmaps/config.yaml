@@ -49,13 +49,13 @@ presubmits:
   - name: basic-test
     context: what is the context?
     always_run: true
-    rerun_command: "@istio-bot bazel test this"
-    trigger: "@istio-bot (bazel )?test this"
+    rerun_command: "@prowbot bazel test this"
+    trigger: "@prowbot (bazel )?test this"
     branches:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.19
+      - image: gcr.io/isito-prow/bazelbuild:0.20
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"
