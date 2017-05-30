@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sinker
+  labels:
+    app: sinker
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sinker
+    spec:
+      nodeSelector:
+        role: prow
+      containers:
+      - name: sinker
+        image: gcr.io/isito-prow/sinker:0.9
