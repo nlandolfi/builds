@@ -17,6 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+env
+
 # Clone the repository, and enter
 echo "> Cloning: ${REPO_OWNER}/${REPO_NAME}"
 git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git
@@ -28,18 +30,37 @@ echo "> Branching: pull/${PULL_NUMBER}"
 git fetch origin pull/${PULL_NUMBER}/head:prow
 git checkout prow
 
-if [! -2 ./.prow/${JOB_NAME}.sh ]; then
-    echo "./prow/${JOB_NAME}.sh does not exist"
-    exit 1
+gcloud auth activate-service-account --key-file=/etc/service-account/service-account.json
+gcloud config get-value account
+
+mkdir /artifacts
+
+echo "> Running: ./jobs/${JOB_NAME}.sh"
+
+./jobs/${JOB_NAME}.sh > ./stdout.txt 2> ./stderr.txt
+
+RUN_RESULT=$?
+
+if [ $RUN_RESULT != 0 ]; then
+    echo "> Run FAILURE"
 fi
 
-echo "> Running: ./prow/${JOB_NAME}.sh"
-
-./prow/${JOB_NAME}.sh
-
-if [ $? != 0 ]; then
-    echo "> Run failed"
+if [ $RUN_RESULT == 0 ]; then
+    echo "> Run SUCCESS"
 fi
 
-# exit with status code of previous command
-exit $?
+echo "> Uploading..."
+
+gsutil -q -h Content-Type:text/plain cp ./std*.txt gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/
+
+if [ "$(ls -A /artifacts)" ]; then
+    echo "...and artifacts"
+    gsutil -q -h Content-Type:text/plain cp /artifacts/* gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/artifacts/
+else
+    echo "...NO artifacts"
+fi
+
+echo "> Uploaded to: gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/"
+
+# exit with status code of job
+exit $RUN_RESULT

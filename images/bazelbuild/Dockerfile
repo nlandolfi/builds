@@ -49,5 +49,5 @@ RUN wget https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x6
     npm install -g mocha
 
 WORKDIR /workspace
-ADD runner /
-ENTRYPOINT ["/bin/bash", "/runner"]
+ADD simplerunner /
+ENTRYPOINT ["/bin/bash", "/simplerunner"]
