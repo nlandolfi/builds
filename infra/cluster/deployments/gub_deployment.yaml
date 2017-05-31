@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gub
+  labels:
+    app: gub
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: gub
+    spec:
+      nodeSelector:
+        role: prow
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: gub
+        image: gcr.io/isito-prow/gub:0.2
+        imagePullPolicy: Always
+        args:
+            - "--addr=:8888"
+            - "--bucket=precise-firmament-3016"
+            - "--safile=/etc/service-account/service-account.json"
+        ports:
+          - name: http
+            containerPort: 8888
+        volumeMounts:
+        - name: service-account
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service-account
+        secret:
+          secretName: myproject-service-account

@@ -47,7 +47,7 @@ presubmits:
 
   nlandolfi/test-infra:
   - name: basic-test
-    context: what is the context?
+    context: jobs/basic-test.sh
     always_run: true
     rerun_command: "@prowbot bazel test this"
     trigger: "@prowbot (bazel )?test this"
@@ -55,7 +55,37 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.20
+      - image: gcr.io/isito-prow/bazelbuild:0.32
+        imagePullPolicy: Always
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--clean"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+
+  nlandolfi/test-infra:
+  - name: basic-build
+    context: jobs/basic-build.sh
+    always_run: true
+    rerun_command: "@prowbot bazel build this"
+    trigger: "@prowbot (bazel )?build this"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/isito-prow/bazelbuild:0.32
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"

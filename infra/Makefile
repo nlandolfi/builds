@@ -27,8 +27,10 @@ update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=./cluster/configmaps/plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
 update-configs:
+	make stopd
 	make update-config
 	make update-plugins
+	make startd
 
 .PHONY: update-config update-plugins get-cluster-credentials update-configs
 
@@ -37,6 +39,12 @@ hook-deployment: get-cluster-credentials
 
 hook-service: get-cluster-credentials
 	kubectl create -f cluster/services/hook_service.yaml
+
+gub-deployment: get-cluster-credentials
+	kubectl apply -f cluster/deployments/gub_deployment.yaml
+
+gub-service: get-cluster-credentials
+	kubectl create -f cluster/services/gub_service.yaml
 
 sinker-deployment: get-cluster-credentials
 	kubectl apply -f cluster/deployments/sinker_deployment.yaml
@@ -57,7 +65,7 @@ tot-service: get-cluster-credentials
 	kubectl apply -f cluster/services/tot_service.yaml
 
 crier-deployment: get-cluster-credentials
-	kubectl apply -f cluster/deployment/crier_deployment.yaml
+	kubectl apply -f cluster/deployments/crier_deployment.yaml
 
 crier-service: get-cluster-credentials
 	kubectl apply -f cluster/services/crier_service.yaml
@@ -68,4 +76,25 @@ horologium-deployment: get-cluster-credentials
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/deployments/plank_deployment.yaml
 
-.PHONY: hook-deployment hook-service sinker-deployment deck-deployment deck-service splice-deployment tot-service tot-deployment crier-service crier-deployment horologium-deployment plank-deployment
+.PHONY: hook-deployment hook-service sinker-deployment deck-deployment deck-service splice-deployment tot-service tot-deployment crier-service crier-deployment horologium-deployment plank-deployment gub-deployment gub-service
+
+# Assume that configuration is all set up and services are created
+
+startd:
+	make hook-deployment
+	make crier-deployment
+	make deck-deployment
+	make plank-deployment
+	make tot-deployment
+	make gub-deployment
+
+stopd:
+	kubectl delete deployment hook crier deck plank tot gub
+
+restartd:
+	make stopd
+	make startd
+
+.PHONY: stard stopd restartd
+
+# ---

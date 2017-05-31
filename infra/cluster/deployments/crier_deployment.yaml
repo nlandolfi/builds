@@ -30,7 +30,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/isito-prow/crier:0.6
+        image: gcr.io/isito-prow/crier:0.61
         args:
         - "--dry-run=false"
         - "--github-bot-name=prowbot"
