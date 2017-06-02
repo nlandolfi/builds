@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gub;
+
+option go_package = "github.com/nlandolfi/builds/infra/gub";
+
+message JobStatus {
+    uint64 started_millis = 2;
+    uint64 stopped_millis = 3;
+}

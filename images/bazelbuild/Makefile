@@ -13,15 +13,10 @@
 # limitations under the License.
 
 PROJECT = isito-prow
-VERSION = 0.32
+VERSION = 0.36
 
 image:
 	docker build -t "gcr.io/$(PROJECT)/bazelbuild:$(VERSION)" .
-
-push:
 	gcloud docker -- push "gcr.io/$(PROJECT)/bazelbuild:$(VERSION)"
 
-update:
-	make image && make push
-
-.PHONY: image push update
+.PHONY: image

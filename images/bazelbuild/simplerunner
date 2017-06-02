@@ -1,21 +1,8 @@
-#!/usr/bin/env bash
-# Copyright 2016 The Kubernetes Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#!/bin/bash
 
-set -o errexit
+# set -o errexit
 set -o nounset
-set -o pipefail
+# set -o pipefail
 
 env
 
@@ -37,6 +24,7 @@ mkdir /artifacts
 
 echo "> Running: ./jobs/${JOB_NAME}.sh"
 
+// /artifacts exists, gcloud works, and we are in root dir of repo
 ./jobs/${JOB_NAME}.sh > ./stdout.txt 2> ./stderr.txt
 
 RUN_RESULT=$?
@@ -51,11 +39,18 @@ fi
 
 echo "> Uploading..."
 
+# mark this as a job dir for gub
+touch /.job.json
+gsutil -q -h Content-Type:application/json cp /.job.json gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/
+
+# upload stdout and stderr
 gsutil -q -h Content-Type:text/plain cp ./std*.txt gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/
 
+# upload /artifacts/**/*
 if [ "$(ls -A /artifacts)" ]; then
-    echo "...and artifacts"
-    gsutil -q -h Content-Type:text/plain cp /artifacts/* gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/artifacts/
+    echo "...and artifacts:"
+    ls /artifacts
+    gsutil -q -h Content-Type:text/plain cp -r /artifacts/**/* gs://precise-firmament-3016/jobs/${REPO_OWNER}/${REPO_NAME}/${JOB_NAME}/${BUILD_NUMBER}/artifacts/
 else
     echo "...NO artifacts"
 fi

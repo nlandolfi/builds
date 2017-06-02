@@ -7,3 +7,9 @@ istio/test-infra:
 
 nlandolfi/test-infra:
 - trigger
+
+nlandolfi/proxy:
+- trigger
+
+nlandolfi/pilot:
+- trigger
