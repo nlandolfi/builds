@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# entrypoint starts docker daemon
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+set -x # print all commands that are run
+
+if [[ ${UID} -ne 0 ]]; then
+  SUDO=sudo
+else
+  SUDO=
+fi
+
+# start docker
+${SUDO} service docker start
+
+pwd # debug
+env # debug
+
+# get test-infra
+git clone https://github.com/nlandolfi/test-infra-1
+
+# start harness (checks out/runs job/uploads logs)
+./test-infra-1/jenkins/bootstrap.py \
+    --repo="github.com/${REPO_OWNER}/${REPO_NAME:-test-infra}" \
+    --job=${JOB_NAME} \
+    --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
+    --upload="gs://precise-firmament-3016/" \
+    "$@"
