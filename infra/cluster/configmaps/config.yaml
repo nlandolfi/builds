@@ -15,96 +15,6 @@ presubmits:
   #   spec:          If this exists then run a kubernetes pod with this spec.
   #                  Otherwise, run a Jenkins job.
 
-  istio/test-infra:
-  - name: pull-test-infra-bazel
-    context: Jenkins Bazel Build
-    always_run: true
-    rerun_command: "@istio-bot bazel test this"
-    trigger: "@istio-bot (bazel )?test this"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.13
-        imagePullPolicy: Always
-        args:
-        - "--pull=$(PULL_REFS)"
-        - "--clean"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-
-  nlandolfi/test-infra:
-  - name: basic-test
-    context: jobs/basic-test.sh
-    always_run: true
-    rerun_command: "@prowbot bazel test this"
-    trigger: "@prowbot (bazel )?test this"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.35
-        imagePullPolicy: Always
-        args:
-        - "--pull=$(PULL_REFS)"
-        - "--clean"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-
-  nlandolfi/proxy:
-  - name: presubmit
-    context: jobs/presubmit.sh
-    always_run: true
-    rerun_command: "@prowbot bazel test this"
-    trigger: "@prowbot (bazel )?test this"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.35
-        imagePullPolicy: Always
-        args:
-        - "--pull=$(PULL_REFS)"
-        - "--clean"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-
   nlandolfi/test-infra:
   - name: basic-build
     context: jobs/basic-build.sh
@@ -115,7 +25,35 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.35
+      - image: gcr.io/isito-prow/bazel:0.23
+        imagePullPolicy: Always
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--clean"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+  - name: basic-test
+    context: jobs/basic-test.sh
+    always_run: true
+    rerun_command: "@prowbot bazel test this"
+    trigger: "@prowbot (bazel )?test this"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/isito-prow/bazel:0.23
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"
@@ -136,16 +74,75 @@ presubmits:
           secretName: service-account
 
   nlandolfi/pilot:
-  - name: presubmit
-    context: jobs/presubmit.sh
+  - name: pilot-presubmit
+    context: jobs/pilot-presubmit.sh
     always_run: true
-    rerun_command: "@prowbot bazel build this"
-    trigger: "@prowbot (bazel )?build this"
+    rerun_command: "@prowbot bazel test this"
+    trigger: "@prowbot (bazel )?test this"
     branches:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazelbuild:0.35
+      - image: gcr.io/isito-prow/bazel:0.23
+        imagePullPolicy: Always
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--clean"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+    run_after_success:
+      - name: pilot-e2e-smoketest
+        context: jobs/pilot-e2e-smoketest.sh
+        always_run: true
+        rerun_command: "@prowbot e2e test this"
+        trigger: "@prowbot e2e test this"
+        branches:
+        - master
+        spec:
+          containers:
+          - image: gcr.io/isito-prow/bazel:0.23
+            imagePullPolicy: Always
+            args:
+            - "--pull=$(PULL_REFS)"
+            - "--clean"
+            # Bazel needs privileged mode in order to sandbox builds.
+            securityContext:
+              privileged: true
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/service-account/service-account.json
+            volumeMounts:
+            - name: service
+              mountPath: /etc/service-account
+              readOnly: true
+          volumes:
+          - name: service
+            secret:
+              secretName: service-account
+
+  nlandolfi/proxy:
+  - name: proxy-presubmit
+    context: jobs/proxy-presubmit.sh
+    always_run: true
+    rerun_command: "@prowbot bazel test this"
+    trigger: "@prowbot (bazel )?test this"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/isito-prow/bazel:0.23
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"

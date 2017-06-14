@@ -22,11 +22,19 @@ function update_go() {
     mkdir -p "${GO_DIRECTORY}"
   fi
 
+  echo "============= GO VERSION"
+  echo $GO_VERSION
+  echo "============= go current"
+  echo $go_current
+
   if [[ "${GO_VERSION}" != "${go_current}" ]]; then
     retry -n 3 wget -q -nc -P "${GO_DIRECTORY}" "${GO_URL}" \
       || error_exit 'Could not download go.'
+
+    echo "UNTARRING"
     ${SUDO} tar -C /usr/local -xzf "${GO_DIRECTORY}/${GO_ARCHIVE}" \
       || error_exit 'Could not install go.'
+    echo "PATHING"
     export PATH=${PATH}:/usr/local/go/bin
   fi
   echo 'Go up-to-date.'

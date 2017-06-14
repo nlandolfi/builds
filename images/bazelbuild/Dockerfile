@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
     python-pip && \
     apt-get clean
 
-ENV BAZEL_VERSION 0.4.5
+ENV BAZEL_VERSION 0.5.0
 RUN wget "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
@@ -49,5 +49,5 @@ RUN wget https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x6
     npm install -g mocha
 
 WORKDIR /workspace
-ADD simplerunner /
-ENTRYPOINT ["/bin/bash", "/simplerunner"]
+ADD k8srunner /
+ENTRYPOINT ["/bin/bash", "/k8srunner"]

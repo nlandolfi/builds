@@ -13,7 +13,7 @@
 # limitations under the License.
 
 PROJECT = isito-prow
-VERSION = 0.36
+VERSION = 0.37
 
 image:
 	docker build -t "gcr.io/$(PROJECT)/bazelbuild:$(VERSION)" .

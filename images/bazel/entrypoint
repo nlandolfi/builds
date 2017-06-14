@@ -17,6 +17,11 @@ fi
 # start docker
 ${SUDO} service docker start
 
+# setup go
+# mkdir -p /home/bootstrap/go/src/
+# export GOPATH=/home/bootstrap/go
+# export PATH=$GOPATH/bin:$PATH
+
 pwd # debug
 env # debug
 
@@ -28,5 +33,6 @@ git clone https://github.com/nlandolfi/test-infra-1
     --repo="github.com/${REPO_OWNER}/${REPO_NAME:-test-infra}" \
     --job=${JOB_NAME} \
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
-    --upload="gs://precise-firmament-3016/" \
+    --upload="gs://istio-prow/" \
+    --root="${GOPATH}/src" \
     "$@"

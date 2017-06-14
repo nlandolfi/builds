@@ -1,5 +1,5 @@
 PROJECT = isito-prow
-VERSION = 0.16
+VERSION = 0.23
 
 image:
 	docker build -t "gcr.io/$(PROJECT)/bazel:$(VERSION)" .

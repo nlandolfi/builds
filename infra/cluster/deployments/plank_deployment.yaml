@@ -29,5 +29,5 @@ spec:
         role: prow
       containers:
       - name: plank
-        image: gcr.io/isito-prow/plank:0.16
+        image: gcr.io/isito-prow/plank:0.17
         imagePullPolicy: Always
