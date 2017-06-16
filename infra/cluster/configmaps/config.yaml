@@ -25,7 +25,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazel:0.23
+      - image: gcr.io/isito-prow/bazel:0.24
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"
@@ -53,7 +53,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazel:0.23
+      - image: gcr.io/isito-prow/bazel:0.24
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"
@@ -83,7 +83,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazel:0.23
+      - image: gcr.io/isito-prow/bazel:0.24
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"
@@ -98,11 +98,75 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
+        - name: cache-ssd
+          mountPath: /home/bootstrap/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9998
       volumes:
       - name: service
         secret:
           secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
     run_after_success:
+      - name: pilot-codecov
+        context: jobs/pilot-codecov.sh
+        always_run: true
+        rerun_command: "@prowbot codecov this"
+        trigger: "@prowbot codecov this"
+        branches:
+        - master
+        spec:
+          containers:
+          - image: gcr.io/isito-prow/bazel:0.24
+            imagePullPolicy: Always
+            args:
+            - "--pull=$(PULL_REFS)"
+            - "--clean"
+            # Bazel needs privileged mode in order to sandbox builds.
+            securityContext:
+              privileged: true
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/service-account/service-account.json
+            volumeMounts:
+            - name: service
+              mountPath: /etc/service-account
+              readOnly: true
+          volumes:
+          - name: service
+            secret:
+              secretName: service-account
+      - name: pilot-integration
+        context: jobs/pilot-integration.sh
+        always_run: true
+        rerun_command: "@prowbot integration test this"
+        trigger: "@prowbot integration test this"
+        branches:
+        - master
+        spec:
+          containers:
+          - image: gcr.io/isito-prow/bazel:0.24
+            imagePullPolicy: Always
+            args:
+            - "--pull=$(PULL_REFS)"
+            - "--clean"
+            # Bazel needs privileged mode in order to sandbox builds.
+            securityContext:
+              privileged: true
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/service-account/service-account.json
+            volumeMounts:
+            - name: service
+              mountPath: /etc/service-account
+              readOnly: true
+          volumes:
+          - name: service
+            secret:
+              secretName: service-account
       - name: pilot-e2e-smoketest
         context: jobs/pilot-e2e-smoketest.sh
         always_run: true
@@ -112,7 +176,7 @@ presubmits:
         - master
         spec:
           containers:
-          - image: gcr.io/isito-prow/bazel:0.23
+          - image: gcr.io/isito-prow/bazel:0.24
             imagePullPolicy: Always
             args:
             - "--pull=$(PULL_REFS)"
@@ -142,7 +206,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/isito-prow/bazel:0.23
+      - image: gcr.io/isito-prow/bazel:0.24
         imagePullPolicy: Always
         args:
         - "--pull=$(PULL_REFS)"

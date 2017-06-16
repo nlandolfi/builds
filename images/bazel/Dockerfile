@@ -38,5 +38,6 @@ WORKDIR ${HOME}
 RUN mkdir -p /home/bootstrap/go/src
 ENV GOPATH=/home/bootstrap/go
 ENV PATH ${GOPATH}/bin:${PATH}
+ENV CI bootstrap
 
 ENTRYPOINT ["entrypoint"]
