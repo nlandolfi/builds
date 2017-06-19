@@ -13,3 +13,6 @@ nlandolfi/proxy:
 
 nlandolfi/pilot:
 - trigger
+
+nlandolfi/mixer:
+- trigger

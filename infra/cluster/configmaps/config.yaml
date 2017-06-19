@@ -73,6 +73,44 @@ presubmits:
         secret:
           secretName: service-account
 
+  nlandolfi/mixer:
+  - name: mixer-presubmit
+    context: jobs/mixer-presubmit.sh
+    always_run: true
+    rerun_command: "@prowbot bazel test this"
+    trigger: "@prowbot (bazel )?test this"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/isito-prow/bazel:0.24
+        imagePullPolicy: Always
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--clean"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /home/bootstrap/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9998
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
   nlandolfi/pilot:
   - name: pilot-presubmit
     context: jobs/pilot-presubmit.sh
